@@ -1,11 +1,16 @@
-import css from "./ImageCard.module.css"
 
-export const ImageCard = ({ image, openModal }) => (
-  <li className={css.item} key={image.id} onClick={() => openModal(image)}>
+import css from './ImageCard.module.css';
+
+export const ImageCard = ({ items, isOpen }) => {
+
+  return (
     <div>
-      <img src={image.urls.small} alt={`Image ${image.id}`} />
+      <img
+        className={css.image}
+        src={items.urls.small}
+        alt={items.alt_description}
+        onClick={() => isOpen(items.urls.regular)}
+      />
     </div>
-  </li>
-);
-
-
+  );
+};
