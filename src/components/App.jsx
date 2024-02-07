@@ -10,31 +10,36 @@ import { Loader } from './Loader/Loader';
 export const App = () => {
   const [unsplash, setUnsplash] = useState([]);
   const [query, setQuery] = useState('');
-  const [page, setLoad] = useState(1);
-  const [show, setShow] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
   const [error, setError] = useState(false);
   const [loader, setLoader] = useState(false);
 
-  const SearchValue = searchValue => {
+  const SearchValue = (searchValue) => {
     setQuery(`${Date.now()}/${searchValue}`);
     setUnsplash([]);
-    setLoad(1);
+    setPage(1);
+    setTotalPages(0);
   };
 
   useEffect(() => {
     if (query === '') {
       return;
     }
+
     async function ApiData() {
       try {
         setLoader(true);
         const data = await fetchData(query.split('/')[1], page);
-        setUnsplash(prevData => [...prevData, ...data.results]);
-        console.log(data);
-        setShow(data.total_pages !== page);
-        if (query.split('/')[1].length === 0) {
+
+        if (data.results.length === 0 && page === 1) {
           toast('There are no images for this request');
+          return;
         }
+
+        setUnsplash((prevData) => [...prevData, ...data.results]);
+        setTotalPages(data.total_pages);
+
       } catch (error) {
         setError(true);
         console.log(error);
@@ -45,17 +50,21 @@ export const App = () => {
         setLoader(false);
       }
     }
+
     ApiData();
   }, [query, page]);
-  // console.log(load);
-  // console.log(show);
+
+  const onLoadMore = () => {
+    setPage((prevPage) => prevPage + 1);
+  };
+
   return (
     <div>
       <SearchBar onSubmit={SearchValue} />
       <Toaster />
       <ImageGallery items={unsplash} />
       {loader && <Loader />}
-      {show && <LoadMore onLoadMore={setLoad} value={page} />}
+      {page < totalPages && <LoadMore onLoadMore={onLoadMore} />}
       {error && <ErrorMessage />}
     </div>
   );
